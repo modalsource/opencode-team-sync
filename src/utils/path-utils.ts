@@ -23,14 +23,14 @@ export function getNamespacePath(
   type: ConfigType,
   namespace: NamespaceType
 ): string {
-  return path.join(getBaseConfigDir(scope), type, namespace);
+  return normalizePath(path.join(getBaseConfigDir(scope), type, namespace));
 }
 
 /**
  * Get the lockfile path for a scope
  */
 export function getLockfilePath(scope: ConfigScope): string {
-  return path.join(getBaseConfigDir(scope), LOCKFILE_NAME);
+  return normalizePath(path.join(getBaseConfigDir(scope), LOCKFILE_NAME));
 }
 
 /**
@@ -111,12 +111,12 @@ export function getDestinationPath(
 
   if (type === 'skill' && configName.includes('/')) {
     // Skills maintain directory structure
-    return path.join(namespacePath, configName, 'SKILL.md');
+    return normalizePath(path.join(namespacePath, configName, 'SKILL.md'));
   } else if (type === 'agent') {
-    return path.join(namespacePath, `${configName}.md`);
+    return normalizePath(path.join(namespacePath, `${configName}.md`));
   } else {
     // MCP configs keep their extension
-    return path.join(namespacePath, configName);
+    return normalizePath(path.join(namespacePath, configName));
   }
 }
 
