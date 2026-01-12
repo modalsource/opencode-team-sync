@@ -76,7 +76,8 @@ export const PROJECT_CONFIG_DIR = '.opencode';
  * Get configuration directory for a given scope
  */
 export function getConfigDir(scope: ConfigScope): string {
-  return scope === 'global' ? GLOBAL_CONFIG_DIR : PROJECT_CONFIG_DIR;
+  const dir = scope === 'global' ? GLOBAL_CONFIG_DIR : PROJECT_CONFIG_DIR;
+  return dir.replace(/\\/g, '/');
 }
 
 /**
@@ -87,7 +88,8 @@ export function getConfigPath(
   type: ConfigType,
   namespace: NamespaceType
 ): string {
-  return path.join(getConfigDir(scope), type, namespace);
+  const configPath = path.join(getConfigDir(scope), type, namespace);
+  return configPath.replace(/\\/g, '/');
 }
 
 /**
