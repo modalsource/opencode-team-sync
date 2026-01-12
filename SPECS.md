@@ -156,9 +156,8 @@ OpenCode Team Sync (oct) is a CLI tool that enables teams to:
 +------------------+     +-------------------+     +------------------+
 |   agents/        |     |   GitManager      |     | ~/.config/       |
 |   skills/        |     |   SyncEngine      |     |   opencode/      |
-|   mcp/           |     |   Validator       |     |     agent/       |
-|   manifest.yaml  |     |   TagResolver     |     |     skill/       |
-+------------------+     +-------------------+     |     mcp/         |
+|   manifest.yaml  |     |   Validator       |     |     agent/       |
++------------------+     +-------------------+     |     skill/       |
                                                   +------------------+
 ```
 
@@ -191,9 +190,6 @@ team-configs/
 │   │   └── playwright.md
 │   └── deployment/
 │       └── k8s-deploy.md
-├── mcp/
-│   ├── database.json
-│   └── monitoring.json
 └── README.md
 ```
 
@@ -212,10 +208,6 @@ team-configs/
 │   │   └── testing/
 │   │       └── jest-runner.md
 │   └── personal/
-├── mcp/
-│   ├── team/
-│   │   └── database.json
-│   └── personal/
 └── .opencode-team.lock          # Lockfile tracking sync state
 ```
 
@@ -228,9 +220,6 @@ my-project/
 │   │   ├── team/
 │   │   └── personal/
 │   ├── skill/
-│   │   ├── team/
-│   │   └── personal/
-│   ├── mcp/
 │   │   ├── team/
 │   │   └── personal/
 │   └── .opencode-team.lock
@@ -525,14 +514,6 @@ const SkillConfigSchema = z.object({
   tags: z.array(z.string()).optional(),
   commands: z.array(z.string()).optional(),
 });
-
-const McpServerConfigSchema = z.object({
-  name: z.string().min(1).max(100),
-  command: z.string(),
-  args: z.array(z.string()).optional(),
-  env: z.record(z.string()).optional(),
-  tags: z.array(z.string()).optional(),
-});
 ```
 
 ### 7.3 Validation Rules
@@ -554,14 +535,7 @@ const McpServerConfigSchema = z.object({
 | Required name field | Name must be present and non-empty |
 | Valid commands | Command names must be valid identifiers |
 
-#### MCP Server Configurations
-
-| Rule | Description |
-|------|-------------|
-| Valid JSON | Must parse without errors |
-| Required command | Command must be present |
-| Valid environment | Env values must be strings |
-| No secrets in config | Warn if potential secrets detected |
+**Note**: MCP servers are configured in `opencode.json`, not distributed as separate files. Teams should document their MCP server configurations in the repository README, but these are not synced by oct.
 
 ### 7.4 Validation Output
 
@@ -575,12 +549,8 @@ Validating configurations...
 ✗ agents/broken-agent.md
   Error: Invalid frontmatter at line 3
   Expected string for 'name', got number
-  
-⚠ mcp/database.json
-  Warning: Possible secret detected in 'password' field
-  Consider using environment variables instead
 
-Validation complete: 2 passed, 1 failed, 1 warning
+Validation complete: 2 passed, 1 failed
 ```
 
 ---
@@ -769,7 +739,6 @@ Synced At: 2026-01-12 10:30:00
 Configurations:
   Agents: 5 synced
   Skills: 3 synced
-  MCP Servers: 2 synced
 
 Status: Up to date
 
@@ -806,7 +775,7 @@ oct list [type] [options]
 
 | Argument | Description | Values |
 |----------|-------------|--------|
-| `type` | Filter by configuration type | agent, skill, mcp, (all) |
+| `type` | Filter by configuration type | agent, skill, (all) |
 
 #### Options
 
@@ -833,10 +802,6 @@ Skills (3):
   ✓ testing/jest-runner    [testing, jest]
   ✓ testing/playwright     [testing, e2e]
   ✓ deployment/k8s-deploy  [devops, k8s]
-
-MCP Servers (2):
-  ✓ database    [backend, postgres]
-  ✓ monitoring  [devops, metrics]
 ```
 
 #### Examples
@@ -905,13 +870,7 @@ agents/broken-agent.md
     - 'name' field is required
     - 'tags[0]' contains invalid characters
 
-mcp/database.json
-  ✓ Syntax valid
-  ✓ Schema valid
-  ⚠ Semantic warning
-    - Possible secret in 'password' field
-
-Summary: 1 passed, 1 failed, 1 warning
+Summary: 1 passed, 1 failed
 ```
 
 #### Examples
@@ -1169,12 +1128,11 @@ This will remove all team configurations:
   Global:
     ~/.config/opencode/agent/team/ (5 files)
     ~/.config/opencode/skill/team/ (3 files)
-    ~/.config/opencode/mcp/team/ (2 files)
 
   Project:
     .opencode/agent/team/ (2 files)
 
-Total: 12 configurations will be removed
+Total: 10 configurations will be removed
 
 Proceed? [y/N]
 ```
@@ -1239,7 +1197,6 @@ Repository:
 Statistics:
   Agents: 5
   Skills: 3
-  MCP Servers: 2
   Last Sync: 2026-01-12 10:30:00
 ```
 
@@ -1265,12 +1222,10 @@ When no manifest is present, oct automatically discovers configurations:
 1. Scan repository for known directories:
    - agents/, agent/
    - skills/, skill/
-   - mcp/, mcp-servers/
    
 2. For each directory, scan for config files:
-   - *.md (agents, skills)
-   - *.json (MCP servers)
-   - *.yaml, *.yml (any type)
+   - *.md (agents)
+   - SKILL.md (skills)
    
 3. Parse frontmatter/content to extract metadata
 4. Build configuration list
@@ -1300,10 +1255,6 @@ configurations:
       tags: [testing]
     - path: skills/testing/playwright.md
       tags: [testing, e2e]
-      
-  mcp:
-    - path: mcp/database.json
-      tags: [backend]
 ```
 
 ### 9.3 Discovery Priority
@@ -1738,7 +1689,6 @@ oct/
 │   ├── schemas/
 │   │   ├── agent.ts
 │   │   ├── skill.ts
-│   │   ├── mcp.ts
 │   │   ├── manifest.ts
 │   │   └── lockfile.ts
 │   ├── types/
@@ -1775,15 +1725,6 @@ interface SkillConfig {
   path: string;
 }
 
-interface McpServerConfig {
-  name: string;
-  command: string;
-  args?: string[];
-  env?: Record<string, string>;
-  tags?: string[];
-  path: string;
-}
-
 // Lockfile
 interface Lockfile {
   version: string;
@@ -1797,7 +1738,7 @@ interface Lockfile {
 
 interface LockfileEntry {
   path: string;
-  type: 'agent' | 'skill' | 'mcp';
+  type: 'agent' | 'skill';
   destination: string;
   hash: string;
   tags: string[];
@@ -1814,7 +1755,7 @@ interface SyncResult {
 
 interface ConfigChange {
   path: string;
-  type: 'agent' | 'skill' | 'mcp';
+  type: 'agent' | 'skill';
   oldHash?: string;
   newHash?: string;
 }
@@ -1841,9 +1782,9 @@ Provide a template repository with:
 
 - Example agents (3-5)
 - Example skills (2-3)
-- Example MCP configs (1-2)
 - Sample manifest.yaml
 - README with customization guide
+- MCP server documentation template (for team repos)
 
 ### 17.3 Developer Documentation
 
@@ -1954,7 +1895,7 @@ Provide a template repository with:
 |------|------------|
 | Agent | AI assistant configuration (personality, capabilities) |
 | Skill | Task-specific capability for agents |
-| MCP Server | Model Context Protocol server configuration |
+| MCP Server | Model Context Protocol server (configured in opencode.json, not synced) |
 | Namespace | Isolated directory scope (team/personal) |
 | Lockfile | File tracking sync state and versions |
 | Manifest | Optional explicit configuration list |

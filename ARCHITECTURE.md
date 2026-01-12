@@ -361,7 +361,6 @@ src/
 │   │   ├── validation-engine.ts
 │   │   ├── agent-validator.ts
 │   │   ├── skill-validator.ts
-│   │   ├── mcp-validator.ts
 │   │   └── manifest-validator.ts
 │   ├── namespace/
 │   │   ├── namespace-manager.ts
@@ -376,7 +375,6 @@ src/
 ├── schemas/               # Zod schemas
 │   ├── agent.schema.ts
 │   ├── skill.schema.ts
-│   ├── mcp.schema.ts
 │   ├── manifest.schema.ts
 │   └── lockfile.schema.ts
 │
@@ -508,11 +506,6 @@ export class DiscoveryEngine {
    * Discover skills (SKILL.md in skills/)
    */
   private async discoverSkills(path: string): Promise<ConfigEntry[]>
-
-  /**
-   * Discover MCP servers (.json/.yaml in mcp/)
-   */
-  private async discoverMCP(path: string): Promise<ConfigEntry[]>
 
   /**
    * Parse and merge with manifest if present
@@ -860,7 +853,7 @@ function matchTags(configTags: string[], filterTags: string[]): boolean {
  */
 export interface ConfigEntry {
   path: string                    // Relative path in repo
-  type: ConfigType                // agent | skill | mcp
+  type: ConfigType                // agent | skill
   name: string                    // Derived from filename/directory
   hash: string                    // SHA-256 hash of content
   tags: string[]                  // Associated tags
@@ -868,7 +861,7 @@ export interface ConfigEntry {
   syncedAt?: string              // ISO timestamp
 }
 
-export type ConfigType = 'agent' | 'skill' | 'mcp'
+export type ConfigType = 'agent' | 'skill'
 
 /**
  * Lockfile structure
@@ -965,35 +958,6 @@ export const SkillFrontmatterSchema = z.object({
   compatibility: z.string().optional(),
   metadata: z.record(z.string()).optional()
 })
-
-/**
- * MCP local server schema
- */
-export const MCPLocalSchema = z.object({
-  type: z.literal('local'),
-  command: z.array(z.string()),
-  environment: z.record(z.string()).optional(),
-  enabled: z.boolean().optional(),
-  timeout: z.number().optional()
-})
-
-/**
- * MCP remote server schema
- */
-export const MCPRemoteSchema = z.object({
-  type: z.literal('remote'),
-  url: z.string().url(),
-  enabled: z.boolean().optional(),
-  headers: z.record(z.string()).optional(),
-  oauth: z.union([z.boolean(), z.object({
-    clientId: z.string().optional(),
-    clientSecret: z.string().optional(),
-    scope: z.string().optional()
-  })]).optional(),
-  timeout: z.number().optional()
-})
-
-export const MCPSchema = z.union([MCPLocalSchema, MCPRemoteSchema])
 ```
 
 ---
@@ -1183,8 +1147,7 @@ describe('Init and Sync Integration', () => {
   beforeEach(async () => {
     testRepo = await createTestRepository({
       agents: ['frontend-dev.md', 'backend-api.md'],
-      skills: ['git-release/SKILL.md'],
-      mcp: ['jira.json']
+      skills: ['git-release/SKILL.md']
     })
     tempDir = await createTempDir()
   })

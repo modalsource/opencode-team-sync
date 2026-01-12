@@ -5,10 +5,9 @@ This file provides guidance for AI coding agents working on this codebase.
 ## Project Overview
 
 OpenCode Team Sync (oct) is a CLI tool for synchronizing OpenCode configurations
-(agents, skills, MCP servers) across teams via Git repositories. The project is
-currently in the planning/specification phase.
+(agents and skills) across teams via Git repositories.
 
-**Tech Stack**: TypeScript 5.x, Node.js 18+, Commander.js, Vitest, tsup
+**Tech Stack**: TypeScript 5.x, Node.js 18+, Commander.js, Vitest, tsup, minimatch
 
 ## Build & Development Commands
 
@@ -31,9 +30,9 @@ npm run format                                 # Formatting
 src/
 ├── cli/commands/        # init, sync, status, list, validate, update, rollback, remove, clean, info
 ├── core/                # discovery, git, sync, validator, namespace, lockfile, tags
-├── schemas/             # Zod schemas for agent, skill, mcp, manifest, lockfile
+├── schemas/             # Zod schemas for agent, skill, manifest, lockfile
 ├── types/               # TypeScript interfaces
-└── utils/               # fs-utils, path-utils, hash-utils, error-utils, logger
+└── utils/               # fs-utils, path-utils, hash-utils, error-utils, logger, yaml-utils
 
 tests/
 ├── unit/                # Fast, isolated tests (~70%)
@@ -120,10 +119,11 @@ export type AgentFrontmatter = z.infer<typeof AgentFrontmatterSchema>;
 ```typescript
 interface ConfigEntry {
   path: string;           // Relative path in repo
-  type: ConfigType;       // 'agent' | 'skill' | 'mcp'
+  type: ConfigType;       // 'agent' | 'skill'
   name: string;           // Derived from filename/directory
   hash: string;           // SHA-256 of content
   tags: string[];
+  description?: string;   // Optional metadata
 }
 
 interface SyncResult {
@@ -138,8 +138,14 @@ interface SyncResult {
 ## Configuration Types
 
 - **Agents**: Markdown files with YAML frontmatter (`.md`)
+  - Patterns: `agents/**/*.md`, `*.agent.md`
+  - Validated by: `AgentValidator`
 - **Skills**: SKILL.md files in skill directories
-- **MCP Servers**: JSON/YAML configuration files
+  - Patterns: `skills/**/SKILL.md`, `skill/**/SKILL.md`
+  - Validated by: `SkillValidator`
+
+**Note**: MCP servers are NOT distributed as files. They are configured in 
+`opencode.json` and should be documented in team repos but not synced.
 
 ## Namespace Isolation
 

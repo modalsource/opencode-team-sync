@@ -253,7 +253,6 @@
 - [ ] Define Zod schemas (3h)
   - Agent schema (frontmatter validation)
   - Skill schema (SKILL.md validation)
-  - MCP schema (JSON validation)
   - Manifest schema (.opencode-team.yaml)
   - Lockfile schema
 
@@ -520,7 +519,7 @@
 **Subtasks**:
 - [ ] List functionality (3h)
   - List all configs (team + personal)
-  - Filter by type (agent/skill/mcp)
+  - Filter by type (agent/skill)
   - Filter by tags
   - Sort options
 
@@ -594,7 +593,7 @@
   ```bash
   oct remove <config-name> [options]
   Options:
-    --type <type>    Config type (agent/skill/mcp)
+    --type <type>    Config type (agent/skill)
   ```
   - Remove single config
   - Update lockfile
