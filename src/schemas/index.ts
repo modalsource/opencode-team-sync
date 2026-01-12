@@ -76,7 +76,20 @@ export type ManifestType = z.infer<typeof ManifestSchema>;
  */
 export const LockfileSchema = z.object({
   version: z.string(),
-  repository: z.string().min(1), // Accept both URLs and local paths for testing
+  repository: z
+    .string()
+    .min(1)
+    .refine(
+      (val) => {
+        // Accept URLs (http, https, git, ssh)
+        if (val.match(/^(https?|git|ssh):\/\/.+/)) return true;
+        // Accept absolute paths (for local testing)
+        if (val.startsWith('/') || val.match(/^[a-zA-Z]:\\/)) return true;
+        // Reject relative paths and other invalid formats
+        return false;
+      },
+      { message: 'Repository must be a valid URL or absolute path' }
+    ),
   ref: z.string().min(1),
   commit: z.string().min(1),
   scope: z.enum(['global', 'project']),

@@ -1,0 +1,14 @@
+version: '1'
+metadata:
+  name: 'Test Team Configurations'
+  description: 'Sample configurations for testing'
+  author: 'OpenCode Team'
+
+globalTags:
+  - test
+  - sample
+
+exclude:
+  - '**/.git/**'
+  - '**/node_modules/**'
+  - '**/.DS_Store'

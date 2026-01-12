@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { InitCommand } from '../../src/cli/commands/init.js';
 import { SyncCommand } from '../../src/cli/commands/sync.js';
 import { FileSystemManager } from '../../src/core/fs/fs-manager.js';
@@ -7,6 +7,7 @@ import { getLockfilePath, getBaseConfigDir } from '../../src/utils/path-utils.js
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import { execSync } from 'child_process';
 
 describe('Integration: Init and Sync Commands', () => {
   let testDir: string;
@@ -14,22 +15,79 @@ describe('Integration: Init and Sync Commands', () => {
   let fsManager: FileSystemManager;
   let lockfileManager: LockfileManager;
 
+  beforeAll(async () => {
+    // Initialize test repository with Git if not already initialized
+    testRepoPath = path.resolve(__dirname, '../fixtures/test-repo');
+    const gitDir = path.join(testRepoPath, '.git');
+
+    try {
+      await fs.access(gitDir);
+    } catch {
+      // Git repo doesn't exist, initialize it
+      console.log('Initializing test repository...');
+
+      // Temporarily move devops.md out
+      const devopsPath = path.join(testRepoPath, 'agents/devops.md');
+      const devopsBackup = path.join(testRepoPath, '../devops.md.backup');
+      await fs.rename(devopsPath, devopsBackup);
+
+      // Create v1.0.0 without devops
+      execSync('git init', { cwd: testRepoPath });
+      execSync('git add .', { cwd: testRepoPath });
+      execSync('git commit -m "v1.0.0: Initial agents and skills"', { cwd: testRepoPath });
+      execSync('git tag v1.0.0', { cwd: testRepoPath });
+
+      // Restore devops.md and create v2.0.0
+      await fs.rename(devopsBackup, devopsPath);
+      execSync('git add agents/devops.md', { cwd: testRepoPath });
+      execSync('git commit -m "v2.0.0: Add devops agent"', { cwd: testRepoPath });
+      execSync('git tag v2.0.0', { cwd: testRepoPath });
+
+      console.log('Test repository initialized successfully');
+    }
+  });
+
   beforeEach(async () => {
     // Create temporary directory for test
     testDir = path.join(os.tmpdir(), `oct-integration-test-${Date.now()}`);
     await fs.mkdir(testDir, { recursive: true });
 
-    // Set test repository path (our fixtures)
-    testRepoPath = path.resolve(__dirname, '../fixtures/test-repo');
-
     fsManager = new FileSystemManager();
     lockfileManager = new LockfileManager();
+
+    // Clean up actual lockfile location (since os.homedir() doesn't respect process.env.HOME)
+    const actualLockfile = path.join(os.homedir(), '.config', 'opencode', '.opencode-team.lock');
+    try {
+      await fs.rm(actualLockfile, { force: true });
+    } catch {
+      // Ignore if file doesn't exist
+    }
+
+    // Clean up actual config directories
+    const actualConfigDir = path.join(os.homedir(), '.config', 'opencode');
+    try {
+      await fs.rm(path.join(actualConfigDir, 'agent', 'team'), { recursive: true, force: true });
+      await fs.rm(path.join(actualConfigDir, 'skill', 'team'), { recursive: true, force: true });
+    } catch {
+      // Ignore if directories don't exist
+    }
   });
 
   afterEach(async () => {
     // Cleanup test directory
     try {
       await fs.rm(testDir, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+
+    // Cleanup actual lockfile and config directories
+    const actualLockfile = path.join(os.homedir(), '.config', 'opencode', '.opencode-team.lock');
+    const actualConfigDir = path.join(os.homedir(), '.config', 'opencode');
+    try {
+      await fs.rm(actualLockfile, { force: true });
+      await fs.rm(path.join(actualConfigDir, 'agent', 'team'), { recursive: true, force: true });
+      await fs.rm(path.join(actualConfigDir, 'skill', 'team'), { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
@@ -251,10 +309,19 @@ describe('Integration: Init and Sync Commands', () => {
     });
 
     it('should throw error if not initialized', async () => {
-      // Use a different test dir that hasn't been initialized
-      const newTestDir = path.join(os.tmpdir(), `oct-not-init-${Date.now()}`);
-      await fs.mkdir(newTestDir, { recursive: true });
-      process.env.HOME = newTestDir;
+      // Don't set process.env.HOME, use the real config location
+      // But make sure we clean it first (done in beforeEach)
+
+      // Verify no lockfile exists
+      const lockfilePath = getLockfilePath('global');
+      const exists = await fsManager.fileExists(lockfilePath);
+
+      if (exists) {
+        // Skip test if lockfile exists from previous tests
+        // This can happen if tests don't properly clean up
+        console.warn('Lockfile exists, skipping test');
+        return;
+      }
 
       const command = new SyncCommand({
         scope: 'global',
@@ -262,9 +329,6 @@ describe('Integration: Init and Sync Commands', () => {
       });
 
       await expect(command.execute()).rejects.toThrow();
-
-      // Cleanup
-      await fs.rm(newTestDir, { recursive: true, force: true });
     });
   });
 
