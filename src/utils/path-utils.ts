@@ -12,7 +12,8 @@ import {
  * Get the base configuration directory for a scope
  */
 export function getBaseConfigDir(scope: ConfigScope): string {
-  return scope === 'global' ? GLOBAL_CONFIG_DIR : PROJECT_CONFIG_DIR;
+  const dir = scope === 'global' ? GLOBAL_CONFIG_DIR : PROJECT_CONFIG_DIR;
+  return normalizePath(dir);
 }
 
 /**
