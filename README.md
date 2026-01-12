@@ -10,10 +10,10 @@
 
 ## 🎯 What is OpenCode Team Sync?
 
-OpenCode Team Sync is a CLI tool that enables teams to share and synchronize [OpenCode](https://opencode.ai) configurations (agents, skills, and MCP servers) across team members through Git repositories.
+OpenCode Team Sync is a CLI tool that enables teams to share and synchronize [OpenCode](https://opencode.ai) configurations (agents and skills) across team members through Git repositories.
 
 **Key Benefits**:
-- 📦 **Standardize team workflows** - Share common agents, skills, and MCP configurations
+- 📦 **Standardize team workflows** - Share common agents and skills configurations
 - 🚀 **Faster onboarding** - New developers get team configurations in seconds
 - 🔄 **Easy updates** - Sync latest configurations with a single command
 - 🛡️ **Namespace isolation** - Keep personal and team configurations separate
@@ -83,7 +83,7 @@ This will:
 opencode
 ```
 
-Your OpenCode is now configured with team agents, skills, and MCP servers!
+Your OpenCode is now configured with team agents and skills!
 
 ### 3. Check Status
 
@@ -116,10 +116,7 @@ Team configurations are kept separate from your personal configurations:
 │   │   └── frontend-dev.md
 │   └── personal/      # ← Your personal configurations
 │       └── my-agent.md
-├── skill/
-│   ├── team/
-│   └── personal/
-└── mcp/
+└── skill/
     ├── team/
     └── personal/
 ```
@@ -193,7 +190,6 @@ Status: Update available (v1.3.0)
 Synced configs:
   - 3 agents
   - 5 skills
-  - 2 MCP servers
 
 Run 'oct update' to upgrade
 ```
@@ -280,14 +276,11 @@ team-configs/
 ├── agents/
 │   ├── frontend-dev.md
 │   └── backend-api.md
-├── skills/
-│   ├── git-release/
-│   │   └── SKILL.md
-│   └── pr-review/
-│       └── SKILL.md
-└── mcp/
-    ├── company-jira.json
-    └── internal-docs.json
+└── skills/
+    ├── git-release/
+    │   └── SKILL.md
+    └── pr-review/
+        └── SKILL.md
 ```
 
 ### Manifest File (`.opencode-team.yaml`)
@@ -480,7 +473,7 @@ npm run test:coverage
 - ✅ FileSystemManager: Complete file operations
 - ✅ Path utilities for cross-platform support
 - ✅ Zod schemas for all configuration types
-- ✅ Comprehensive validators (Agent, Skill, MCP, Manifest, Lockfile)
+- ✅ Comprehensive validators (Agent, Skill, Manifest, Lockfile)
 - ✅ 58 unit tests passing (80%+ coverage on core modules)
 
 #### 🚧 In Progress (Week 3)

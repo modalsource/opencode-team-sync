@@ -2,7 +2,7 @@ import path from 'path';
 import { minimatch } from 'minimatch';
 import type { ConfigEntry, ConfigType, Manifest, ManifestConfig } from '../../types/index.js';
 import { FileSystemManager } from '../fs/fs-manager.js';
-import { AgentValidator, SkillValidator, McpValidator } from '../validator/validators.js';
+import { AgentValidator, SkillValidator } from '../validator/validators.js';
 import { parseYamlContent } from '../../utils/yaml-utils.js';
 import { getLogger } from '../../utils/logger.js';
 import { DiscoveryError, ValidationError, ErrorCode } from '../../utils/errors.js';
@@ -61,13 +61,11 @@ export class DiscoveryEngine {
   private logger = getLogger();
   private agentValidator: AgentValidator;
   private skillValidator: SkillValidator;
-  private mcpValidator: McpValidator;
 
   constructor(fsManager?: FileSystemManager) {
     this.fs = fsManager ?? new FileSystemManager();
     this.agentValidator = new AgentValidator();
     this.skillValidator = new SkillValidator();
-    this.mcpValidator = new McpValidator();
   }
 
   /**
@@ -233,7 +231,7 @@ export class DiscoveryEngine {
     const configs: ConfigEntry[] = [];
 
     // Discover each config type
-    for (const type of ['agent', 'skill', 'mcp'] as ConfigType[]) {
+    for (const type of ['agent', 'skill'] as ConfigType[]) {
       const typeConfigs = await this.discoverType(baseDir, type, excludePatterns, options);
       configs.push(...typeConfigs);
     }
@@ -364,9 +362,6 @@ export class DiscoveryEngine {
         case 'skill':
           result = this.skillValidator.validate(content, configEntry);
           break;
-        case 'mcp':
-          result = this.mcpValidator.validate(content, configEntry);
-          break;
         default: {
           const exhaustiveCheck: never = type;
           throw new Error(`Unknown config type: ${String(exhaustiveCheck)}`);
@@ -409,8 +404,6 @@ export class DiscoveryEngine {
           return this.extractAgentMetadata(content);
         case 'skill':
           return this.extractSkillMetadata(content);
-        case 'mcp':
-          return this.extractMcpMetadata(content);
         default:
           return {};
       }
@@ -463,45 +456,6 @@ export class DiscoveryEngine {
   }
 
   /**
-   * Extract metadata from MCP configuration file
-   */
-  private extractMcpMetadata(content: string): {
-    name?: string;
-    tags?: string[];
-    description?: string;
-  } {
-    try {
-      const config = parseYamlContent<{
-        name?: string;
-        tags?: string[];
-        description?: string;
-      }>(content);
-
-      return {
-        name: config.name,
-        tags: config.tags,
-        description: config.description,
-      };
-    } catch {
-      // Try JSON parsing
-      try {
-        const config = JSON.parse(content) as {
-          name?: string;
-          tags?: string[];
-          description?: string;
-        };
-        return {
-          name: config.name,
-          tags: config.tags,
-          description: config.description,
-        };
-      } catch {
-        return {};
-      }
-    }
-  }
-
-  /**
    * Derive configuration name from file path
    */
   private deriveName(type: ConfigType, relativePath: string): string {
@@ -520,11 +474,6 @@ export class DiscoveryEngine {
         const skillDir = path.dirname(relativePath);
         const skillName = path.basename(skillDir);
         return skillName;
-      }
-
-      case 'mcp': {
-        // mcp/company-jira.json -> company-jira
-        return parsed.name;
       }
 
       default:

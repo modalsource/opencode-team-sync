@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  AgentValidator,
-  SkillValidator,
-  McpValidator,
-} from '../../src/core/validator/validators.js';
+import { AgentValidator, SkillValidator } from '../../src/core/validator/validators.js';
 import type { ConfigEntry } from '../../src/types/index.js';
 
 const mockConfigEntry: ConfigEntry = {
@@ -96,61 +92,6 @@ This skill runs Jest tests...`;
       expect(validator.validateName('testing/jest-runner')).toBe(true);
       expect(validator.validateName('skill_with_underscore')).toBe(true);
       expect(validator.validateName('Invalid Skill!')).toBe(false);
-    });
-  });
-
-  describe('McpValidator', () => {
-    const validator = new McpValidator();
-
-    it('should validate valid MCP config', () => {
-      const content = JSON.stringify({
-        name: 'Database Server',
-        command: 'node',
-        args: ['server.js'],
-        env: {
-          PORT: '3000',
-        },
-      });
-
-      const mcpEntry: ConfigEntry = { ...mockConfigEntry, type: 'mcp' };
-      const result = validator.validate(content, mcpEntry);
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
-    });
-
-    it('should error on invalid JSON', () => {
-      const content = '{ invalid json }';
-
-      const mcpEntry: ConfigEntry = { ...mockConfigEntry, type: 'mcp' };
-      const result = validator.validate(content, mcpEntry);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0].message).toContain('Invalid JSON');
-    });
-
-    it('should warn about potential secrets', () => {
-      const content = JSON.stringify({
-        command: 'node',
-        env: {
-          API_KEY: 'secret123',
-          PASSWORD: 'mypass',
-        },
-      });
-
-      const mcpEntry: ConfigEntry = { ...mockConfigEntry, type: 'mcp' };
-      const result = validator.validate(content, mcpEntry);
-      expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings.some((w) => w.message.includes('secret'))).toBe(true);
-    });
-
-    it('should error when command is missing', () => {
-      const content = JSON.stringify({
-        name: 'Test Server',
-        args: ['test'],
-      });
-
-      const mcpEntry: ConfigEntry = { ...mockConfigEntry, type: 'mcp' };
-      const result = validator.validate(content, mcpEntry);
-      expect(result.valid).toBe(false);
     });
   });
 });

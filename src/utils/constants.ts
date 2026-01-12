@@ -30,7 +30,7 @@ export const MANIFEST_ALIASES = [
 /**
  * Configuration types
  */
-export const CONFIG_TYPES: ConfigType[] = ['agent', 'skill', 'mcp'];
+export const CONFIG_TYPES: ConfigType[] = ['agent', 'skill'];
 
 /**
  * Namespace types
@@ -98,7 +98,6 @@ export function getConfigPath(
 export const DISCOVERY_PATTERNS: Record<ConfigType, string[]> = {
   agent: ['agents/**/*.md', '*.agent.md'],
   skill: ['skills/**/SKILL.md', 'skill/**/SKILL.md'],
-  mcp: ['mcp/**/*.json', 'mcp/**/*.yaml', 'mcp/**/*.yml'],
 };
 
 /**

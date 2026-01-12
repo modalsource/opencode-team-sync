@@ -2,12 +2,10 @@ import type { ValidationResult, ValidationIssue, ConfigEntry } from '../../types
 import {
   AgentFrontmatterSchema,
   SkillFrontmatterSchema,
-  McpServerConfigSchema,
   ManifestSchema,
   LockfileSchema,
   type AgentFrontmatter,
   type SkillFrontmatter,
-  type McpServerConfig,
   type ManifestType,
   type LockfileType,
 } from '../../schemas/index.js';
@@ -212,94 +210,6 @@ export class SkillValidator extends BaseValidator {
   validateName(name: string): boolean {
     // Skill names can include directory separator
     return /^[a-z0-9-_/]+$/i.test(name);
-  }
-}
-
-/**
- * MCP server configuration validator
- */
-export class McpValidator extends BaseValidator {
-  private SECRET_KEYWORDS = ['password', 'secret', 'token', 'key', 'apikey', 'api_key'];
-
-  /**
-   * Validate an MCP configuration file
-   */
-  validate(content: string, configEntry: ConfigEntry): ValidationResult {
-    const errors: ValidationIssue[] = [];
-    const warnings: ValidationIssue[] = [];
-
-    try {
-      // Parse JSON
-      let config: unknown;
-      try {
-        config = JSON.parse(content);
-      } catch (error) {
-        if (error instanceof Error) {
-          errors.push({
-            message: `Invalid JSON: ${error.message}`,
-            suggestion: 'Check for syntax errors in the JSON file',
-          });
-          return {
-            valid: false,
-            config: configEntry,
-            errors,
-            warnings,
-          };
-        }
-        throw error;
-      }
-
-      // Validate against schema
-      try {
-        McpServerConfigSchema.parse(config);
-      } catch (error) {
-        if (error instanceof ZodError) {
-          errors.push(...this.zodErrorsToIssues(error));
-        }
-      }
-
-      // Check for potential secrets
-      const jsonString = JSON.stringify(config).toLowerCase();
-      for (const keyword of this.SECRET_KEYWORDS) {
-        if (jsonString.includes(keyword)) {
-          warnings.push({
-            message: `Possible secret detected: "${keyword}"`,
-            suggestion: 'Consider using environment variables for sensitive data',
-          });
-        }
-      }
-
-      return {
-        valid: errors.length === 0,
-        config: configEntry,
-        errors,
-        warnings,
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        return {
-          valid: false,
-          config: configEntry,
-          errors: [{ message: error.message }],
-          warnings,
-        };
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Validate MCP config object
-   */
-  validateConfig(config: unknown): McpServerConfig {
-    try {
-      return McpServerConfigSchema.parse(config);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        throw new SchemaValidationError('McpServerConfig', error.errors);
-      }
-      throw error;
-    }
   }
 }
 

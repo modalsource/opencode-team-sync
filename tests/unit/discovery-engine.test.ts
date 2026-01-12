@@ -97,40 +97,6 @@ This is the skill content.`;
       });
     });
 
-    it('should discover MCP server configurations', async () => {
-      // Create mcp directory
-      const mcpDir = path.join(testDir, 'mcp');
-      await fs.mkdir(mcpDir, { recursive: true });
-
-      // Create MCP config file
-      const mcpConfig = {
-        name: 'test-mcp',
-        command: 'node',
-        args: ['server.js'],
-        tags: ['test', 'mcp'],
-        description: 'A test MCP server',
-      };
-
-      await fs.writeFile(
-        path.join(mcpDir, 'test-mcp.json'),
-        JSON.stringify(mcpConfig, null, 2),
-        'utf-8'
-      );
-
-      const result = await discoveryEngine.discover({
-        baseDir: testDir,
-        validate: false,
-      });
-
-      expect(result.configs).toHaveLength(1);
-      expect(result.configs[0]).toMatchObject({
-        type: 'mcp',
-        name: 'test-mcp',
-        tags: ['test', 'mcp'],
-        description: 'A test MCP server',
-      });
-    });
-
     it('should discover all configuration types together', async () => {
       // Create agents directory
       const agentsDir = path.join(testDir, 'agents');
@@ -156,28 +122,13 @@ description: A test skill
 Skill content.`;
       await fs.writeFile(path.join(skillsDir, 'SKILL.md'), skillContent, 'utf-8');
 
-      // Create mcp directory
-      const mcpDir = path.join(testDir, 'mcp');
-      await fs.mkdir(mcpDir, { recursive: true });
-
-      const mcpConfig = {
-        name: 'test-mcp',
-        command: 'node',
-        args: ['server.js'],
-      };
-      await fs.writeFile(
-        path.join(mcpDir, 'test-mcp.json'),
-        JSON.stringify(mcpConfig, null, 2),
-        'utf-8'
-      );
-
       const result = await discoveryEngine.discover({
         baseDir: testDir,
         validate: false,
       });
 
-      expect(result.configs).toHaveLength(3);
-      expect(result.configs.map((c) => c.type).sort()).toEqual(['agent', 'mcp', 'skill']);
+      expect(result.configs).toHaveLength(2);
+      expect(result.configs.map((c) => c.type).sort()).toEqual(['agent', 'skill']);
     });
 
     it('should exclude files matching exclude patterns', async () => {
@@ -410,29 +361,6 @@ Content.`;
       });
 
       expect(result.configs[0].name).toBe('my-skill');
-    });
-
-    it('should derive MCP name from filename', async () => {
-      const mcpDir = path.join(testDir, 'mcp');
-      await fs.mkdir(mcpDir, { recursive: true });
-
-      const mcpConfig = {
-        command: 'node',
-        args: ['server.js'],
-      };
-
-      await fs.writeFile(
-        path.join(mcpDir, 'my-mcp-server.json'),
-        JSON.stringify(mcpConfig),
-        'utf-8'
-      );
-
-      const result = await discoveryEngine.discover({
-        baseDir: testDir,
-        validate: false,
-      });
-
-      expect(result.configs[0].name).toBe('my-mcp-server');
     });
   });
 });

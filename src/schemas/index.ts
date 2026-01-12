@@ -39,24 +39,10 @@ export const SkillFrontmatterSchema = z.object({
 export type SkillFrontmatter = z.infer<typeof SkillFrontmatterSchema>;
 
 /**
- * MCP Server configuration schema
- */
-export const McpServerConfigSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  command: z.string().min(1),
-  args: z.array(z.string()).optional(),
-  env: z.record(z.string()).optional(),
-  tags: z.array(TagSchema).optional(),
-  description: z.string().optional(),
-});
-
-export type McpServerConfig = z.infer<typeof McpServerConfigSchema>;
-
-/**
  * Manifest configuration entry schema
  */
 export const ManifestConfigSchema = z.object({
-  type: z.enum(['agent', 'skill', 'mcp']),
+  type: z.enum(['agent', 'skill']),
   path: z.string().min(1),
   name: z.string().min(1).max(100).optional(),
   tags: z.array(TagSchema).optional(),
@@ -100,7 +86,7 @@ export const LockfileSchema = z.object({
   configs: z.record(
     z.object({
       path: z.string(),
-      type: z.enum(['agent', 'skill', 'mcp']),
+      type: z.enum(['agent', 'skill']),
       name: z.string(),
       hash: z.string(),
       tags: z.array(z.string()),

@@ -1,8 +1,8 @@
 /**
  * Configuration entry type
- * Represents an agent, skill, or MCP server configuration
+ * Represents an agent or skill configuration
  */
-export type ConfigType = 'agent' | 'skill' | 'mcp';
+export type ConfigType = 'agent' | 'skill';
 
 /**
  * Scope of the configuration installation
