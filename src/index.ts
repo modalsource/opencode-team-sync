@@ -18,6 +18,12 @@ export * from './utils/logger.js';
 export { GitManager } from './core/git/git-manager.js';
 export { FileSystemManager } from './core/fs/fs-manager.js';
 export { LockfileManager } from './core/lockfile/lockfile-manager.js';
+export { DiscoveryEngine } from './core/discovery/discovery-engine.js';
+export type {
+  DiscoveryOptions,
+  DiscoveryResult,
+  DiscoveryErrorInfo,
+} from './core/discovery/discovery-engine.js';
 export * from './core/validator/validators.js';
 
 // Export utils

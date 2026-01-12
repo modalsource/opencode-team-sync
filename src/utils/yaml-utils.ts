@@ -43,3 +43,19 @@ export function hasFrontmatter(content: string): boolean {
 export function stringifyFrontmatter(data: unknown): string {
   return yaml.stringify(data);
 }
+
+/**
+ * Parse YAML content (for non-markdown YAML files)
+ */
+export function parseYamlContent<T = unknown>(content: string, filePath?: string): T {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const parsed = yaml.parse(content);
+    return parsed as T;
+  } catch (error) {
+    const location = filePath ? ` in ${filePath}` : '';
+    throw new Error(
+      `Failed to parse YAML${location}: ${error instanceof Error ? error.message : 'unknown error'}`
+    );
+  }
+}

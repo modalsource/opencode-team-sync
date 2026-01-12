@@ -48,6 +48,10 @@ export enum ErrorCode {
   TAG_INVALID_FORMAT = 'TAG_INVALID_FORMAT',
   TAG_NOT_FOUND = 'TAG_NOT_FOUND',
 
+  // Discovery errors (8xxx)
+  DISCOVERY_ERROR = 'DISCOVERY_ERROR',
+  DISCOVERY_NO_CONFIGS = 'DISCOVERY_NO_CONFIGS',
+
   // General errors (9xxx)
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
   OPERATION_CANCELLED = 'OPERATION_CANCELLED',
@@ -358,5 +362,16 @@ export class TagInvalidFormatError extends TagError {
       { tag }
     );
     this.name = 'TagInvalidFormatError';
+  }
+}
+
+/**
+ * Discovery errors
+ */
+export class DiscoveryError extends OpenCodeTeamError {
+  constructor(message: string, code: ErrorCode, context?: Record<string, unknown>, cause?: Error) {
+    super(message, code, context, cause);
+    this.name = 'DiscoveryError';
+    Object.setPrototypeOf(this, DiscoveryError.prototype);
   }
 }
