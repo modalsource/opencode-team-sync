@@ -113,6 +113,7 @@ export class GitCloneError extends GitError {
       cause
     );
     this.name = 'GitCloneError';
+    Object.setPrototypeOf(this, GitCloneError.prototype);
   }
 }
 
@@ -125,6 +126,7 @@ export class GitFetchError extends GitError {
       cause
     );
     this.name = 'GitFetchError';
+    Object.setPrototypeOf(this, GitFetchError.prototype);
   }
 }
 
@@ -137,6 +139,7 @@ export class GitCheckoutError extends GitError {
       cause
     );
     this.name = 'GitCheckoutError';
+    Object.setPrototypeOf(this, GitCheckoutError.prototype);
   }
 }
 
@@ -144,6 +147,7 @@ export class GitInvalidRefError extends GitError {
   constructor(ref: string) {
     super(`Invalid Git ref: ${ref}`, ErrorCode.GIT_INVALID_REF, { ref });
     this.name = 'GitInvalidRefError';
+    Object.setPrototypeOf(this, GitInvalidRefError.prototype);
   }
 }
 
@@ -156,6 +160,7 @@ export class GitAuthError extends GitError {
       cause
     );
     this.name = 'GitAuthError';
+    Object.setPrototypeOf(this, GitAuthError.prototype);
   }
 }
 

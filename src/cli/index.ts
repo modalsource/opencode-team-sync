@@ -1,6 +1,8 @@
 import { Command } from 'commander';
 import { getLogger } from '../utils/logger.js';
 import { OpenCodeTeamError } from '../utils/errors.js';
+import { InitCommand } from './commands/init.js';
+import { SyncCommand } from './commands/sync.js';
 
 /**
  * CLI entry point
@@ -29,7 +31,7 @@ async function main(): Promise<void> {
       });
     });
 
-  // Placeholder commands - will be implemented in subsequent tasks
+  // Init command
   program
     .command('init')
     .description('Initialize team configurations from a Git repository')
@@ -37,10 +39,26 @@ async function main(): Promise<void> {
     .option('-r, --ref <ref>', 'Git ref (branch/tag/commit)', 'main')
     .option('-g, --global', 'Install globally (default: project-level)')
     .option('-t, --tags <tags>', 'Initial tag filter (comma-separated)')
-    .action(() => {
-      logger.info('init command - not yet implemented');
+    .option('-e, --exclude-tags <tags>', 'Initial exclude tag filter (comma-separated)')
+    .option('-f, --force', 'Force re-initialization')
+    .action(async (repository: string, opts: any) => {
+      const command = new InitCommand({
+        repository,
+        ref: opts.ref,
+        scope: opts.global ? 'global' : 'project',
+        tags: opts.tags ? opts.tags.split(',').map((t: string) => t.trim()) : undefined,
+        excludeTags: opts.excludeTags
+          ? opts.excludeTags.split(',').map((t: string) => t.trim())
+          : undefined,
+        force: opts.force,
+        verbose: opts.verbose,
+        quiet: opts.quiet,
+        debug: opts.debug,
+      });
+      await command.run();
     });
 
+  // Sync command
   program
     .command('sync')
     .description('Sync configurations from team repository')
@@ -49,8 +67,22 @@ async function main(): Promise<void> {
     .option('-d, --dry-run', 'Preview changes without applying')
     .option('--force-team', 'Team configs override personal')
     .option('--no-validate', 'Skip validation')
-    .action(() => {
-      logger.info('sync command - not yet implemented');
+    .option('-r, --ref <ref>', 'Sync to specific ref')
+    .action(async (opts: any) => {
+      const command = new SyncCommand({
+        tags: opts.tags ? opts.tags.split(',').map((t: string) => t.trim()) : undefined,
+        excludeTags: opts.excludeTags
+          ? opts.excludeTags.split(',').map((t: string) => t.trim())
+          : undefined,
+        dryRun: opts.dryRun,
+        forceTeam: opts.forceTeam,
+        noValidate: !opts.validate,
+        ref: opts.ref,
+        verbose: opts.verbose,
+        quiet: opts.quiet,
+        debug: opts.debug,
+      });
+      await command.run();
     });
 
   program

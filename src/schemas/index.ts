@@ -76,7 +76,7 @@ export type ManifestType = z.infer<typeof ManifestSchema>;
  */
 export const LockfileSchema = z.object({
   version: z.string(),
-  repository: z.string().url(),
+  repository: z.string().min(1), // Accept both URLs and local paths for testing
   ref: z.string().min(1),
   commit: z.string().min(1),
   scope: z.enum(['global', 'project']),
