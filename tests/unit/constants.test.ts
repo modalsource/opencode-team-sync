@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   getConfigDir,
   getConfigPath,
-  getLockfilePath,
   DEFAULT_SCOPE,
   TAG_PATTERN,
 } from '../../src/utils/constants.js';
+import { getLockfilePath } from '../../src/utils/path-utils.js';
 
 describe('Constants', () => {
   it('should return correct config dir for global scope', () => {

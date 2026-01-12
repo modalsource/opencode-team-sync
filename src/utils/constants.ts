@@ -91,13 +91,6 @@ export function getConfigPath(
 }
 
 /**
- * Get lockfile path for a given scope
- */
-export function getLockfilePath(scope: ConfigScope): string {
-  return path.join(getConfigDir(scope), LOCKFILE_NAME);
-}
-
-/**
  * Auto-discovery patterns for each config type
  */
 export const DISCOVERY_PATTERNS: Record<ConfigType, string[]> = {

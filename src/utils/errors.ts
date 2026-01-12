@@ -246,6 +246,7 @@ export class FileNotFoundError extends FileSystemError {
   constructor(filePath: string) {
     super(`File not found: ${filePath}`, ErrorCode.FS_NOT_FOUND, { filePath });
     this.name = 'FileNotFoundError';
+    Object.setPrototypeOf(this, FileNotFoundError.prototype);
   }
 }
 
